@@ -379,7 +379,7 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
               <form onSubmit={handleLoginSubmit}>
                 <div className="form-group">
                   <label className="form-label">
-                    {selectedRole === 'STUDENT' && 'Student ID or Registration Number'}
+                    {selectedRole === 'STUDENT' && 'Student Name, ID, or Registration Number'}
                     {selectedRole === 'ORGANIZER' && 'Club Official NetID or Lead Email'}
                     {selectedRole === 'PLATFORM_ADMIN' && 'Directorate / Dean Official NetID'}
                   </label>
@@ -389,7 +389,7 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
                     onChange={(e) => setIdentifier(e.target.value)}
                     placeholder={
                       selectedRole === 'STUDENT'
-                        ? 'e.g. RA2211003010142 or student email'
+                        ? 'e.g. Keshav Arora, RA2211003010142, or email'
                         : selectedRole === 'ORGANIZER'
                         ? 'e.g. club.lead@srmist.edu.in'
                         : 'dean.studentaffairs@srmist.edu.in'
@@ -511,24 +511,52 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
                 </div>
               )}
 
-              {/* Quick Demo Access for Dean / DSA Portal */}
+              {/* Quick Demo Access for Testing */}
               <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--border-subtle)' }}>
                 <div style={{ fontSize: '0.6875rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700, textAlign: 'center', marginBottom: '0.625rem' }}>
                   ⚡ Quick Demo Access
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('PLATFORM_ADMIN')}
-                  className="btn btn-secondary btn-sm"
-                  style={{ width: '100%', justifyContent: 'space-between', textAlign: 'left' }}
-                >
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: '0.8125rem' }}>⚖️ Prof. S. Ramachandran (Dean / DSA)</div>
-                    <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>Dean of Student Affairs • Event & Club Approvals</div>
-                  </div>
-                  <span style={{ fontSize: '0.6875rem', color: 'var(--color-danger)', fontWeight: 700 }}>Log In →</span>
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickLogin('STUDENT')}
+                    className="btn btn-secondary btn-sm"
+                    style={{ width: '100%', justifyContent: 'space-between', textAlign: 'left' }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '0.8125rem' }}>🎓 Keshav Arora (Student)</div>
+                      <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>RA2211003010142 • 3rd Year CSE</div>
+                    </div>
+                    <span style={{ fontSize: '0.6875rem', color: 'var(--color-primary)', fontWeight: 700 }}>Log In →</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleQuickLogin('ORGANIZER')}
+                    className="btn btn-secondary btn-sm"
+                    style={{ width: '100%', justifyContent: 'space-between', textAlign: 'left' }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '0.8125rem' }}>🏛️ Aarav Sharma (Club Lead)</div>
+                      <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>SRM Coding Club • Event Organizer</div>
+                    </div>
+                    <span style={{ fontSize: '0.6875rem', color: 'var(--color-purple)', fontWeight: 700 }}>Log In →</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleQuickLogin('PLATFORM_ADMIN')}
+                    className="btn btn-secondary btn-sm"
+                    style={{ width: '100%', justifyContent: 'space-between', textAlign: 'left' }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '0.8125rem' }}>⚖️ Prof. S. Ramachandran (Dean / DSA)</div>
+                      <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>Dean of Student Affairs • Event & Club Approvals</div>
+                    </div>
+                    <span style={{ fontSize: '0.6875rem', color: 'var(--color-danger)', fontWeight: 700 }}>Log In →</span>
+                  </button>
+                </div>
               </div>
 
               {/* Club Registration Shortcut */}

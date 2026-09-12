@@ -39,7 +39,22 @@ export const AppProvider = ({ children }) => {
   // User & Role state ('STUDENT' | 'ORGANIZER' | 'PLATFORM_ADMIN')
   const [currentUser, setCurrentUser] = useState(() => {
     const saved = localStorage.getItem('srm_pulse_v3_user');
-    return saved ? JSON.parse(saved) : INITIAL_USER;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        // Automatically sanitize generic placeholder names like 'SRM Student', 'SRM', or empty
+        if (parsed.role === 'STUDENT' && (!parsed.name || parsed.name === 'SRM Student' || parsed.name === 'SRM' || parsed.name.trim() === '')) {
+          parsed.name = INITIAL_USER.name || "Keshav Arora";
+          if (!parsed.regNumber || parsed.regNumber === 'RA2311003010142') {
+            parsed.regNumber = INITIAL_USER.regNumber || "RA2211003010142";
+          }
+        }
+        return parsed;
+      } catch (e) {
+        return INITIAL_USER;
+      }
+    }
+    return INITIAL_USER;
   });
 
   // Core collections with localStorage persistence (v3 keys to ensure fresh clean seed data)
@@ -185,13 +200,27 @@ export const AppProvider = ({ children }) => {
       addToast('Club Organizer Access 🏛️', `Welcome, ${user.name} (Club Lead).`, 'success');
     } else {
       user.role = 'STUDENT';
-      const cleanName = identifier.includes('@')
-        ? identifier.split('@')[0].split(/[._]/).filter(Boolean).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')
-        : identifier.toUpperCase().startsWith('RA') ? `Student (${identifier.toUpperCase()})` : identifier;
-      user.name = cleanName || "SRM Student";
+      const isRA = identifier.toUpperCase().startsWith('RA');
+      const isEmail = identifier.includes('@');
+
+      let resolvedName = INITIAL_USER.name || "Keshav Arora";
+      let resolvedRegNumber = isRA ? identifier.toUpperCase() : (INITIAL_USER.regNumber || "RA2211003010142");
+      let resolvedEmail = isEmail ? identifier : (isRA ? `${identifier.toLowerCase()}@srmist.edu.in` : (INITIAL_USER.email || "ka1234@srmist.edu.in"));
+
+      if (isEmail) {
+        const emailName = identifier.split('@')[0].split(/[._]/).filter(Boolean).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
+        if (emailName && emailName.toLowerCase() !== 'student' && emailName.toLowerCase() !== 'srm') {
+          resolvedName = emailName;
+        }
+      } else if (!isRA && identifier.trim().length > 1) {
+        // User typed their name directly
+        resolvedName = identifier.trim().split(' ').map(s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()).join(' ');
+      }
+
+      user.name = resolvedName;
       user.title = "Student";
-      user.email = identifier.includes('@') ? identifier : `${identifier}@srmist.edu.in`;
-      user.regNumber = identifier.toUpperCase().startsWith('RA') ? identifier.toUpperCase() : "RA2311003010142";
+      user.email = resolvedEmail;
+      user.regNumber = resolvedRegNumber;
       user.department = "Computer Science & Engineering";
       user.year = "3rd Year";
       setCurrentView('student-dashboard');
@@ -236,11 +265,11 @@ export const AppProvider = ({ children }) => {
       .split(/[._0-9]/)
       .filter(Boolean)
       .map(s => s.charAt(0).toUpperCase() + s.slice(1))
-      .join(' ') || 'SRM Student';
+      .join(' ') || INITIAL_USER.name || 'Keshav Arora';
 
     // Inferred or generated SRM Registration number (e.g. RA2311...)
     const regNumber = (googleData.regNumber && googleData.regNumber.trim()) || 
-      (emailPrefix.toUpperCase().startsWith('RA') ? emailPrefix.toUpperCase() : `RA2311003010${Math.floor(100 + Math.random() * 900)}`);
+      (emailPrefix.toUpperCase().startsWith('RA') ? emailPrefix.toUpperCase() : (INITIAL_USER.regNumber || "RA2211003010142"));
 
     const user = {
       id: `usr-google-${Date.now()}`,
@@ -295,9 +324,12 @@ export const AppProvider = ({ children }) => {
         updated.department = "Directorate of Student Affairs, SRMIST";
         setCurrentView('admin-dashboard');
       } else {
-        updated.name = prev.name && prev.role === 'STUDENT' ? prev.name : "SRM Student";
-        updated.email = "student@srmist.edu.in";
-        updated.regNumber = "RA2311003010142";
+        const studentName = (prev.name && prev.role === 'STUDENT' && prev.name !== 'SRM Student' && prev.name !== 'SRM')
+          ? prev.name
+          : (INITIAL_USER.name || "Keshav Arora");
+        updated.name = studentName;
+        updated.email = INITIAL_USER.email || "ka1234@srmist.edu.in";
+        updated.regNumber = INITIAL_USER.regNumber || "RA2211003010142";
         updated.department = "Computer Science & Engineering";
         updated.year = "3rd Year";
         setCurrentView('student-dashboard');
@@ -723,6 +755,16 @@ export const AppProvider = ({ children }) => {
     addToast('Interests Updated', 'Your feed has been personalized.', 'success');
   };
 
+  // Update Student Profile
+  const updateUserProfile = (updatedFields) => {
+    setCurrentUser(prev => {
+      const updated = { ...prev, ...updatedFields };
+      localStorage.setItem('srm_pulse_v3_user', JSON.stringify(updated));
+      return updated;
+    });
+    addToast('Profile Updated ✓', 'Your student profile details have been saved.', 'success');
+  };
+
   // Reset to default
   const resetToDefaultData = () => {
     localStorage.clear();
@@ -804,6 +846,7 @@ export const AppProvider = ({ children }) => {
       markNotificationRead,
       markAllNotificationsRead,
       updateUserInterests,
+      updateUserProfile,
       resetToDefaultData,
       searchQuery,
       setSearchQuery,

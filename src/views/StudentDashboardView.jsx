@@ -17,7 +17,11 @@ import {
   Calendar,
   Eye,
   Trash2,
-  ExternalLink
+  ExternalLink,
+  Edit3,
+  User,
+  Check,
+  X
 } from 'lucide-react';
 
 export const StudentDashboardView = ({ onRegisterClick, onShareClick, onViewPassClick }) => {
@@ -30,14 +34,44 @@ export const StudentDashboardView = ({ onRegisterClick, onShareClick, onViewPass
     certificates, 
     interestTags, 
     updateUserInterests,
+    updateUserProfile,
     cancelRegistration,
     navigateTo 
   } = useApp();
 
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'tickets' | 'saved' | 'achievements'
   const [showInterestModal, setShowInterestModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [selectedInterests, setSelectedInterests] = useState(currentUser.interests);
   const [selectedCert, setSelectedCert] = useState(null);
+
+  // Derive sanitized student name and initials
+  const studentName = (!currentUser.name || currentUser.name === 'SRM Student' || currentUser.name === 'SRM')
+    ? 'Keshav Arora'
+    : currentUser.name;
+
+  const studentInitials = studentName
+    .split(' ')
+    .filter(Boolean)
+    .map(n => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase() || 'KA';
+
+  const [profileFormData, setProfileFormData] = useState({
+    name: studentName,
+    regNumber: currentUser.regNumber || 'RA2211003010142',
+    department: currentUser.department || 'Computer Science & Engineering',
+    year: currentUser.year || '3rd Year'
+  });
+
+  const handleSaveProfile = (e) => {
+    e.preventDefault();
+    if (updateUserProfile) {
+      updateUserProfile(profileFormData);
+    }
+    setShowProfileModal(false);
+  };
 
   // Registered events
   const userConfirmedRegs = registrations.filter(r => r.status === 'CONFIRMED' || r.status === 'ATTENDED');
@@ -113,16 +147,44 @@ export const StudentDashboardView = ({ onRegisterClick, onShareClick, onViewPass
               letterSpacing: '1px',
               flexShrink: 0
             }}>
-              {currentUser.name ? currentUser.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'SR'}
+              {studentInitials}
             </div>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '4px' }}>
                 <h1 style={{ fontSize: '1.65rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                  Good Day, {currentUser.name.split(' ')[0]} 👋
+                  Good Day, {studentName} 👋
                 </h1>
                 <span className="badge badge-primary" style={{ fontSize: '0.6875rem' }}>
                   Student
                 </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileFormData({
+                      name: studentName,
+                      regNumber: currentUser.regNumber || 'RA2211003010142',
+                      department: currentUser.department || 'Computer Science & Engineering',
+                      year: currentUser.year || '3rd Year'
+                    });
+                    setShowProfileModal(true);
+                  }}
+                  className="btn btn-ghost btn-sm"
+                  style={{
+                    fontSize: '0.6875rem',
+                    padding: '2px 8px',
+                    height: 'auto',
+                    borderRadius: 'var(--radius-full)',
+                    border: '1px solid var(--border-subtle)',
+                    color: 'var(--text-secondary)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                  title="Edit Your Name & Profile"
+                >
+                  <Edit3 size={11} />
+                  <span>Edit Profile</span>
+                </button>
                 {(currentUser.authProvider === 'GOOGLE' || currentUser.isGoogleVerified) && (
                   <span className="badge" style={{
                     fontSize: '0.6875rem',
@@ -140,7 +202,7 @@ export const StudentDashboardView = ({ onRegisterClick, onShareClick, onViewPass
                 )}
               </div>
               <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                {currentUser.regNumber} • {currentUser.year} • {currentUser.department}
+                {currentUser.regNumber || 'RA2211003010142'} • {currentUser.year || '3rd Year'} • {currentUser.department || 'Computer Science & Engineering'}
               </div>
               <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: '2px' }}>
                 SRM Institute of Science and Technology, Kattankulathur
@@ -650,6 +712,89 @@ export const StudentDashboardView = ({ onRegisterClick, onShareClick, onViewPass
                 <span>Print / Save as PDF</span>
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Profile Modal */}
+      {showProfileModal && (
+        <div className="modal-overlay" onClick={() => setShowProfileModal(false)}>
+          <div className="modal-content" style={{ maxWidth: '440px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <User size={18} color="var(--color-primary)" />
+                <h3 className="modal-title">Edit Student Profile</h3>
+              </div>
+              <button 
+                onClick={() => setShowProfileModal(false)}
+                className="btn btn-ghost btn-icon-only btn-sm"
+                aria-label="Close"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+              <div className="form-group">
+                <label className="form-label">Full Name</label>
+                <input
+                  type="text"
+                  value={profileFormData.name}
+                  onChange={(e) => setProfileFormData(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="e.g. Keshav Arora"
+                  className="form-input"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Registration Number</label>
+                <input
+                  type="text"
+                  value={profileFormData.regNumber}
+                  onChange={(e) => setProfileFormData(prev => ({ ...prev, regNumber: e.target.value }))}
+                  placeholder="e.g. RA2211003010142"
+                  className="form-input font-mono"
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '0.75rem' }}>
+                <div className="form-group">
+                  <label className="form-label">Department</label>
+                  <input
+                    type="text"
+                    value={profileFormData.department}
+                    onChange={(e) => setProfileFormData(prev => ({ ...prev, department: e.target.value }))}
+                    className="form-input"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Year</label>
+                  <select
+                    value={profileFormData.year}
+                    onChange={(e) => setProfileFormData(prev => ({ ...prev, year: e.target.value }))}
+                    className="form-select"
+                  >
+                    <option value="1st Year">1st Year</option>
+                    <option value="2nd Year">2nd Year</option>
+                    <option value="3rd Year">3rd Year</option>
+                    <option value="4th Year">4th Year</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="modal-footer" style={{ marginTop: '0.5rem' }}>
+                <button type="button" onClick={() => setShowProfileModal(false)} className="btn btn-secondary">
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  <Check size={16} />
+                  <span>Save Changes</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

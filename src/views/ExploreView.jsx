@@ -394,7 +394,7 @@ export const ExploreView = ({ onRegisterClick, onShareClick }) => {
         {sortBy === 'recommended' && (
           <div style={{ fontSize: '0.75rem', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
             <Sparkles size={14} />
-            <span>Personalized for {currentUser.name.split(' ')[0]}'s interests</span>
+            <span>Personalized for {(currentUser.name && currentUser.name !== 'SRM Student' && currentUser.name !== 'SRM') ? currentUser.name.split(' ')[0] : 'Keshav'}'s interests</span>
           </div>
         )}
       </div>

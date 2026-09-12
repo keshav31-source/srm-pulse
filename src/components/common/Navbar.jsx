@@ -72,11 +72,15 @@ export const Navbar = () => {
 
   // Initials generator
   const getInitials = (name) => {
-    if (!name) return 'SRM';
-    const parts = name.split(' ');
+    if (!name || name === 'SRM Student' || name === 'SRM') return 'KA';
+    const parts = name.trim().split(' ').filter(Boolean);
     if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
     return name.slice(0, 2).toUpperCase();
   };
+
+  const navUserName = (!currentUser.name || currentUser.name === 'SRM Student' || currentUser.name === 'SRM')
+    ? 'Keshav Arora'
+    : currentUser.name;
 
   return (
     <header style={{
@@ -313,11 +317,11 @@ export const Navbar = () => {
                   justifyContent: 'center',
                   letterSpacing: '0.02em'
                 }}>
-                  {getInitials(currentUser.name)}
+                  {getInitials(navUserName)}
                 </div>
 
                 <span style={{ fontWeight: 700, fontSize: '0.8125rem', color: 'var(--text-primary)' }}>
-                  {currentUser.name.split(' ')[0]}
+                  {navUserName.split(' ')[0]}
                 </span>
 
                 <span style={{
@@ -369,11 +373,11 @@ export const Navbar = () => {
                         alignItems: 'center',
                         justifyContent: 'center'
                       }}>
-                        {getInitials(currentUser.name)}
+                        {getInitials(navUserName)}
                       </div>
                       <div style={{ minWidth: 0 }}>
                         <div style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {currentUser.name}
+                          {navUserName}
                         </div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {currentUser.email}
